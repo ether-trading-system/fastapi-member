@@ -18,8 +18,8 @@ DEMO_INV_URL = "https://openapivts.koreainvestment.com:29443"
 # 일단은 In-Memory storage에 저장... 추후에 DB로 관리
 API_KEYS_DB = {
     "kimdaewhi": {
-        "appkey": "PS2ZuCSGIUOU4R0M3UYVxaWsDMSYYecvAtYV",
-        "appsecret": "DZxy0nVMEmkDEaEg4bVqmpjA4z+eWQ6kZ/z4hs68UGKgSP/GRIQ9xPqW01hQba15Jx7L73snAAdfJ+iiyypXuRDgrppTgWWtVg84BGzxHQFf60E3YxMyX1GTizCzUV4Zsns40rUwaZYVHYOpXuwcWVyL9sEEazNY+caPNc4iE17KfwEtGM4="
+        "appkey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",               # KIS(한투)에서 발급받은 appkey
+        "appsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"   # KIS(한투)에서 발급받은 appsecret
     },    
 }
 MEMBERS_DB: List[User] = []
