@@ -33,3 +33,12 @@ uvicorn으로 app 실행 후 swagger 페이지 보려면 뒤에 `/docs` 붙이�
 ###  Pydantic
 `BaseModel`은 라이브러리의 클래스로, 데이터 유효성 검사 및 설정을 위해 사용된다.<br>
 Pydantic은 FastAPI와 함께 사용되며, FastAPI는 이를 통해 요청 데이터의 유효성 검사를 자동으로 처리한다.
+
+
+
+### 실행 환경 구축
+1. python 가상환경 구축<br>
+    > https://www.notion.so/dalcon/Python-a068f66a8d5446a08c379f0d00940948 참고<br>
+2. requirements.txt에 등록된 패키지 설치
+
+3. CLI에 `python run.py` 명렁어 입력
