@@ -6,14 +6,10 @@ from pydantic import Field
 # .env 파일 로드
 # load_dotenv()
 
-# Config 설정 또한 Hierarchy 구조로 설정 가능
-# ex) class PostgreSQL(DB_Config): .....
-
-# env에 Key Name을 지정하도록 되어져 있는데 key name과 필드값의 명이 다르면 에러가 나네...?? 뭐지?? -_-;;
 class DB_Config(BaseSettings):
-    db_url: str = Field(default='localhost', env='db_url')
-    db_port: int = Field(default='5432', env='db_port')
-    db_api_key: str = Field(env='db_api_key')
+    db_url: str = Field(default='localhost', env='DB_URL')
+    db_port: int = Field(default='5432', env='DB_PORT')
+    db_api_key: str = Field(env='DB_API_KEY')
 
     model_config = SettingsConfigDict(env_file="postgresql.env")
     
