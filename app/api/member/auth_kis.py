@@ -40,7 +40,11 @@ class SimpleAuthRequest(BaseModel):
 
 
 # 한투 - 유저 등록
-@router.post("/register", status_code=201)
+@router.post("/register", 
+             status_code=201,
+             summary="신규 유저 생성",
+             description="api key, api_secret, id가 포함된 신규 유저를 생성합니다.",
+             response_description="응답 처리 결과")
 def register(request: RegisterRequest):
     if request.username in API_KEYS_DB:
         raise HTTPException(status_code=400, detail="Username already exists")
@@ -106,7 +110,10 @@ def run_simple_auth(request: SimpleAuthRequest):
 
 
 # 한투 - access token 발급(API Key, Secret 사용)
-@router.post("/get-access-token", response_model=UserResponse)
+@router.post("/get-access-token", response_model=UserResponse,
+             summary="access token 발급",
+             description="한국투자증권 access token을 발급받습니다.",
+             response_description="신규 유저의 토큰 정보 반환")
 def get_access_token(request: LoginRequest):
     try:
         response = requests.post(f"{DEMO_INV_URL}/oauth2/tokenP", json={

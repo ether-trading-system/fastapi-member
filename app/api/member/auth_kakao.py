@@ -33,9 +33,12 @@ def get_auth_code(redirect_uri: str = Query(..., alias="redirect_uri"), api_key:
 
 
 # 카카오 간편인증 - Access Token 발급받기
-@router.post("/access-token")
-def get_access_tokne(token_request: TokenRequest):
-    logging.info("POST /get_access_tokne 요청")
+@router.post("/access-token",
+            summary="access token 발급",
+            description="카카오 OAuth2.0 access token을 발급받습니다.",
+            response_description="access token 반환")
+def get_access_token(token_request: TokenRequest):
+    logging.info("POST /get_access_token 요청")
 
     try:
         response = requests.post(
@@ -54,7 +57,10 @@ def get_access_tokne(token_request: TokenRequest):
 
 
 
-@router.get("/user-info")
+@router.get("/user-info",
+            summary="사용자 정보 조회",
+            description="인증 완료된 사용자 정보를 조회합니다.(이메일, 이름, 별명 등)",
+            response_description="사용자 정보")
 def get_user_info(access_token: str = Query(..., alias="access_token")):
     logging.info("GET /get_user_info 요청")
 
@@ -96,7 +102,10 @@ def get_user_info_test(access_token: str = Query(..., alias="access_token")):
 
 
 
-@router.post("/verify-id-token")
+@router.post("/verify-id-token",
+            summary="jwt 토큰 인증",
+            description="jwt를 이용하여 토큰 유효성을 검증합니다.",
+            response_description="인증된 토큰 정보")
 def verify_id_token(id_token: str):
     try:
         # ID 토큰의 유효성을 검증합니다. 여기서 공개 키를 사용하여 서명을 검증합니다.
