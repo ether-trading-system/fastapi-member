@@ -15,7 +15,7 @@ USER_INFO_ENDPOINT = "https://kapi.kakao.com/v2/user/me"
 # 카카오 간편인증 - 인가 코드 받기
 @router.get("/authorize")
 def get_auth_code(redirect_uri: str = Query(..., alias="redirect_uri"), api_key: str = Query(..., alias="api_key")):
-    logging.info("GET /getAuthCode 요청")
+    logging.info("GET /authorize 요청")
 
     # 카카오 인증 url로 get 요청
     try:
@@ -35,7 +35,7 @@ def get_auth_code(redirect_uri: str = Query(..., alias="redirect_uri"), api_key:
 # 카카오 간편인증 - Access Token 발급받기
 @router.post("/access-token")
 def get_access_tokne(token_request: TokenRequest):
-    logging.info("POST /getAccessToken 요청")
+    logging.info("POST /get_access_tokne 요청")
 
     try:
         response = requests.post(
@@ -56,7 +56,7 @@ def get_access_tokne(token_request: TokenRequest):
 
 @router.get("/user-info")
 def get_user_info(access_token: str = Query(..., alias="access_token")):
-    logging.info("GET /getUserInfo 호출")
+    logging.info("GET /get_user_info 요청")
 
     headers = {
         "Authorization": f"Bearer {access_token}"
@@ -77,7 +77,7 @@ def get_user_info(access_token: str = Query(..., alias="access_token")):
 
 @router.get("/user-info-test")
 def get_user_info_test(access_token: str = Query(..., alias="access_token")):
-    logging.info("GET /getUserInfo 요청")
+    logging.info("GET /get_user_info_test 요청")
 
     headers = {
         "Authorization": f"Bearer {access_token}",
