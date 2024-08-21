@@ -53,8 +53,8 @@ def register(request: RegisterRequest):
 
 
 # 한투 - access token 발급(간편인증)
-@router.post("/getAccessTokenByKakao", response_model=UserResponse)
-def execSimpleAuth(request: SimpleAuthRequest):
+@router.post("/get-access-token-from-kakao", response_model=UserResponse)
+def run_simple_auth(request: SimpleAuthRequest):
     if request.username not in API_KEYS_DB:
         raise HTTPException(status_code=404, detail="User not found")
     
@@ -106,8 +106,8 @@ def execSimpleAuth(request: SimpleAuthRequest):
 
 
 # 한투 - access token 발급(API Key, Secret 사용)
-@router.post("/getAccessToken", response_model=UserResponse)
-def getAccessToken(request: LoginRequest):
+@router.post("/get-access-token", response_model=UserResponse)
+def get_access_token(request: LoginRequest):
     try:
         response = requests.post(f"{DEMO_INV_URL}/oauth2/tokenP", json={
             "grant_type": "client_credentials",

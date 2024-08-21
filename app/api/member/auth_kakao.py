@@ -14,7 +14,7 @@ USER_INFO_ENDPOINT = "https://kapi.kakao.com/v2/user/me"
 
 # 카카오 간편인증 - 인가 코드 받기
 @router.get("/authorize")
-def getAuthCode(redirect_uri: str = Query(..., alias="redirect_uri"), api_key: str = Query(..., alias="api_key")):
+def get_auth_code(redirect_uri: str = Query(..., alias="redirect_uri"), api_key: str = Query(..., alias="api_key")):
     logging.info("GET /getAuthCode 요청")
 
     # 카카오 인증 url로 get 요청
@@ -31,9 +31,10 @@ def getAuthCode(redirect_uri: str = Query(..., alias="redirect_uri"), api_key: s
         logging.error(f"카카오 인증 요청에 실패하였습니다 : {e}")
         raise HTTPException(status_code=500, detail="인증 실패")
 
+
 # 카카오 간편인증 - Access Token 발급받기
-@router.post("/accessToken")
-def getAccessToken(token_request: TokenRequest):
+@router.post("/access-token")
+def get_access_tokne(token_request: TokenRequest):
     logging.info("POST /getAccessToken 요청")
 
     try:
@@ -53,8 +54,8 @@ def getAccessToken(token_request: TokenRequest):
 
 
 
-@router.get("/user_info")
-def getUserInfo(access_token: str = Query(..., alias="access_token")):
+@router.get("/user-info")
+def get_user_info(access_token: str = Query(..., alias="access_token")):
     logging.info("GET /getUserInfo 호출")
 
     headers = {
@@ -73,8 +74,9 @@ def getUserInfo(access_token: str = Query(..., alias="access_token")):
         raise HTTPException(status_code=500, detail="사용자 정보 조회 실패")
 
 
-@router.get("/userInfo")
-def getUserInfo(access_token: str = Query(..., alias="access_token")):
+
+@router.get("/user-info-test")
+def get_user_info_test(access_token: str = Query(..., alias="access_token")):
     logging.info("GET /getUserInfo 요청")
 
     headers = {
@@ -93,8 +95,9 @@ def getUserInfo(access_token: str = Query(..., alias="access_token")):
         raise HTTPException(status_code=500, detail="사용자 정보 조회 실패")
 
 
-@router.post("/verifyIDToken")
-def verifyIDToken(id_token: str):
+
+@router.post("/verify-id-token")
+def verify_id_token(id_token: str):
     try:
         # ID 토큰의 유효성을 검증합니다. 여기서 공개 키를 사용하여 서명을 검증합니다.
         decoded_token = jwt.decode(id_token, options={"verify_signature": False})
