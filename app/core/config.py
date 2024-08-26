@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from datetime import datetime
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import BaseModel, Field
@@ -30,6 +31,7 @@ from dotenv import load_dotenv
 #     kakao_rest_key: str = Field(env='kakao_rest_key')
 
 
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 env = os.environ.get("ENV", "")
 
 # Application 기본 설정
@@ -43,7 +45,7 @@ class Settings(BaseSettings, BaseConfig):
     model_config = SettingsConfigDict(
         env_prefix='COMMON_',
         env_file_encoding='utf-8',
-        env_file=('.env', f'.env.{env}'),
+        env_file='.env',
         extra='ignore'
     )
 
@@ -57,7 +59,7 @@ class DBConfig(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix='DB_',
         enf_file_encoding='utf-8',
-        env_file=('.env', f'.env.{env}'),
+        env_file='.env',
         extra='ignore'
     )
 
@@ -91,6 +93,9 @@ class SecurityAPIConfig(BaseSettings):
 # 한국투자증권 API
 class KISAPI(SecurityAPIConfig):
     specific_setting: str = Field(default="Specific", env="KIS_SETTING")
+
+
+
 
 load_dotenv()
 settings = Settings()
