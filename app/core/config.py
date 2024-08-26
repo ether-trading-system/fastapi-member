@@ -58,7 +58,7 @@ class DBConfig(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_prefix='DB_',
-        enf_file_encoding='utf-8',
+        env_file_encoding='utf-8',
         env_file='.env',
         extra='ignore'
     )
@@ -66,18 +66,23 @@ class DBConfig(BaseSettings):
 
 # 간편인증(OAuth) Base Config
 class OAuthAPIConfig(BaseSettings):
-    rest_api_key: str = Field(default="None", env="REST_API_KEY")
-    access_token: str = Field(default="Bearer", env="ACCESS_TOKEN")
-    token_type: str = Field(default="Bearer", env="TOKEN_TYPE")
-    token_expired: datetime = Field(default=None, env="TOKEN_EXPIRED")
+    # 간편인증 관련 기본 정보(필요한 공통 속성 있을 시 추가할 것!)
+    auth_code: str = Field(default=None, env="AUTH_CODE")               # 인가코드
+    access_token: str = Field(default="Bearer", env="ACCESS_TOKEN")     # access token
+    token_type: str = Field(default="Bearer", env="TOKEN_TYPE")         # token 유형
+    token_expired: datetime = Field(default=None, env="TOKEN_EXPIRED")  # 만료일
 
-    class Config:
-        env_file = '.env'
-        env_file_encoding = 'utf-8'
+    model_config = SettingsConfigDict(
+        env_prefix='OAUTH_',
+        env_file_encoding='utf-8',
+        env_file='.env',
+        extra='ignore',
+    )
 
 
 # Kakao API
 class KakaoAPI(OAuthAPIConfig):
+    rest_api_key: str = Field(default="None", env="REST_API_KEY")
     additional_setting: str = Field(default="Default", env="KAKAO_SETTING")
 
 # Google API
@@ -100,6 +105,8 @@ class KISAPI(SecurityAPIConfig):
 load_dotenv()
 settings = Settings()
 dbConfig = DBConfig()
+oauthConfig = OAuthAPIConfig()
 
 print(settings.dict())
 print(dbConfig.dict())
+print(oauthConfig.dict())
