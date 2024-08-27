@@ -1,9 +1,13 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import Depends, APIRouter, HTTPException, Query
 from fastapi.responses import RedirectResponse, JSONResponse
 from app.schemas.auth_kakao import TokenRequest, TokenResponse
 import requests
 import logging
 import jwt
+
+from sqlalchemy.orm import Session
+from app.core.db_manager import SessionLocal, engine
+from app.models.auth_token_info import AuthTokenInfo
 
 
 router = APIRouter()
@@ -114,3 +118,27 @@ def verify_id_token(id_token: str):
     except jwt.PyJWTError as e:
         logging.error(f"ID 토큰 검증에 실패하였습니다 : {e}")
         raise HTTPException(status_code=400, detail="ID 토큰 검증 실패")
+    
+
+
+# 의존성 생성
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@router.get('/auth-token/{user_id}')
+def read_auth_token(user_id: str, db: Session = Depends(get_db)):
+    print(f'user_id : {user_id}')
+    try:
+        auth_token = db.query(AuthTokenInfo).filter(AuthTokenInfo.user_id == user_id).first()
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+    if auth_token is None:
+        raise HTTPException(status_code=404, detail="Auth token not found")
+    
+    return auth_token
