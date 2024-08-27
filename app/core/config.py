@@ -9,28 +9,6 @@ from dotenv import load_dotenv
 # .env 파일 로드
 # load_dotenv()
 
-# class DBSettings(BaseSettings):
-#     db_url: str = Field(default='localhost', env='DB_URL')
-#     db_port: int = Field(default='5432', env='DB_PORT')            # PostgreSQL 기본포트
-#     db_api_key: str = Field(env='DB_API_KEY')
-
-#     model_config = SettingsConfigDict(env_file="postgresql.env")
-    
-
-
-# # API 관련 공통속성 정의(api_key, token_type, expire, secret_code 등등...)
-# class API_Config(BaseSettings):
-#     api_key: str = Field(env='api_key')
-    
-    
-# # 한투 API 관련 속성 정의
-# class API_KIS_Config(API_Config):
-#     kis_app_secret: str = Field(env='kis_api_key')
-    
-# class API_Kakao_Config(API_Config):
-#     kakao_rest_key: str = Field(env='kakao_rest_key')
-
-
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 env = os.environ.get("ENV", "")
 
@@ -55,6 +33,7 @@ class DBConfig(BaseSettings):
     url: str = Field(default='localhost', env='URL')
     port: int = Field(default=1433, env='PORT')            # PostgreSQL 기본포트
     api_key: str = Field(default='None', env='API_KEY')
+    uri: str = Field(default='None', env='URI')
 
     model_config = SettingsConfigDict(
         env_prefix='DB_',
@@ -103,10 +82,11 @@ class KISAPI(SecurityAPIConfig):
 
 
 load_dotenv()
+
 settings = Settings()
-dbConfig = DBConfig()
+# dbConfig = DBConfig()
 oauthConfig = OAuthAPIConfig()
 
 print(settings.dict())
-print(dbConfig.dict())
+# print(dbConfig.dict())
 print(oauthConfig.dict())
