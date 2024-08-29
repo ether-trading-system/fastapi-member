@@ -43,7 +43,7 @@ class DBConfig(BaseSettings):
     )
 
 
-# 간편인증(OAuth) Base Config
+# 간편인증(OAuth) Base Config - 이게 필요할까? 이건 일회성이 될텐데..
 class OAuthAPIConfig(BaseSettings):
     # 간편인증 관련 기본 정보(필요한 공통 속성 있을 시 추가할 것!)
     auth_code: str = Field(default=None, env="AUTH_CODE")               # 인가코드
