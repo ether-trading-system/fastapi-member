@@ -61,7 +61,7 @@ def login(redirect_url: str = Query(..., alias="redirect-url"), api_key: str = Q
             description="카카오 OAuth2.0 access token을 발급받습니다.",
             response_description="access token 반환")
 def get_access_token(token_request: TokenRequest):
-    logging.info("POST /get_access_token 요청")
+    logging.info("POST /get_access_token start")
 
     try:
         response = requests.post(
@@ -72,6 +72,7 @@ def get_access_token(token_request: TokenRequest):
 
         token_response = response.json()
 
+        logging.info(token_response)
         return JSONResponse(content=token_response)
 
     except requests.RequestException as e:
@@ -93,6 +94,24 @@ def verify_id_token(id_token: str):
         raise HTTPException(status_code=400, detail="ID 토큰 검증 실패")
     
 
+
+@router.get("/get-user-info")
+def get_user_info(access_token: str):
+    logging.info("POST /get_user_info start")
+
+    try:
+        headers = {
+            "Authorization": f"Bearer {access_token}"
+        }
+        response = requests.get(USER_INFO_ENDPOINT, headers=headers)
+        response.raise_for_status()
+        user_info = response.json()
+
+        return JSONResponse(content=user_info)
+    
+    except requests.RequestException as e:
+        logging.error(f"사용자 정보 조회 실패 : {e}")
+        raise HTTPException(status_code=500, detail="사용자 정보 조회 실패")
 
 # ------------------------------------------------------------------------------------- #
 
