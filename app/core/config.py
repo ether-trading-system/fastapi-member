@@ -16,9 +16,11 @@ env = os.environ.get("ENV", "")
 class BaseConfig(BaseModel):
     app_name: str = Field(default="FastAPI Application", env='APP_NAME')
     debug_mode: bool = Field(default=False, env='DEBUG_MODE')
+    app_host: str = Field(default="localhost", env='APP_HOST')
+    app_port: int = Field(default=9000, env='APP_HOST')
 
 
-# 환경별 설정
+# Common 환경 설정
 class Settings(BaseSettings, BaseConfig):
     model_config = SettingsConfigDict(
         env_prefix='COMMON_',
@@ -82,11 +84,3 @@ class KISAPI(SecurityAPIConfig):
 
 
 load_dotenv()
-
-settings = Settings()
-# dbConfig = DBConfig()
-oauthConfig = OAuthAPIConfig()
-
-print(settings.dict())
-# print(dbConfig.dict())
-print(oauthConfig.dict())
