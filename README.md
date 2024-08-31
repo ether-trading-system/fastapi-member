@@ -22,6 +22,7 @@
     .\.venv\Scripts\Activate # 가상환경 실행
     pip install -r requirements.txt # 가상환경 패키지 설치
     ```
+    ![Alt text](readmeImg/image.png)
 
 3. **환경변수 설정**
     - 프로젝트 홈 디렉토리에 .env 파일 생성
@@ -43,4 +44,4 @@
     ```
 
 **실행 결과**
-![Alt text](image-1.png)
+![Alt text](readmeImg/image-1.png)
