@@ -26,13 +26,14 @@ def get_db():
         db.close()
 
 
-@router.get("/run-kakao-auth")
-def run_kakao_auth(user_id: str = Query(..., alias="user-id"), db: Session = Depends(get_db)):
-    # 1. API Key 조회
-    logging.info("GET /run-kakao-auth start")
-    api_key = get_api_key(user_id, db)
+# API Key 조회는 DB에서 하지 않고 환경변수로 등록해놓고 사용함
+# @router.get("/run-kakao-auth")
+# def run_kakao_auth(user_id: str = Query(..., alias="user-id"), db: Session = Depends(get_db)):
+#     # 1. API Key 조회
+#     logging.info("GET /run-kakao-auth start")
+#     api_key = get_api_key(user_id, db)
 
-    return JSONResponse({"api_key": api_key})
+#     return JSONResponse({"api_key": api_key})
 
 
 # 카카오 간편인증 - 인가 코드 받기
