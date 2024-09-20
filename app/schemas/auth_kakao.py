@@ -16,3 +16,8 @@ class TokenResponse(BaseModel):
     refresh_token: str 
     refresh_token_expires_in: int
     scope: str = None
+    
+    
+class KakaoLogoutRequest(BaseModel):
+    access_token: str
+    target_id: int

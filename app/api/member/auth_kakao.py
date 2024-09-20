@@ -1,6 +1,6 @@
 from fastapi import Depends, APIRouter, HTTPException, Query
 from fastapi.responses import RedirectResponse, JSONResponse
-from app.schemas.auth_kakao import TokenRequest, TokenResponse
+from app.schemas.auth_kakao import TokenRequest, TokenResponse, KakaoLogoutRequest
 import requests
 import logging
 import jwt
@@ -12,9 +12,11 @@ from app.models.auth_token_info import AuthTokenInfo
 
 router = APIRouter()
 
-AUTHORIZE_ENDPOINT = "https://kauth.kakao.com/oauth/authorize"
-ACCESS_TOKEN_ENDPOINT = "https://kauth.kakao.com/oauth/token"
-USER_INFO_ENDPOINT = "https://kapi.kakao.com/v2/user/me"
+KAKAO_AUTHORIZE_ENDPOINT = "https://kauth.kakao.com/oauth/authorize"
+KAKAO_ACCESS_TOKEN_ENDPOINT = "https://kauth.kakao.com/oauth/token"
+KAKAO_USER_INFO_ENDPOINT = "https://kapi.kakao.com/v2/user/me"
+KAKAO_LOGOUT_ENDPOINT = "	https://kapi.kakao.com/v1/user/logout"
+KAKAO_UNLINK_ENDPOINT = "	https://kapi.kakao.com/v1/user/unlink"
 
 
 # 의존성 생성
@@ -26,16 +28,6 @@ def get_db():
         db.close()
 
 
-# API Key 조회는 DB에서 하지 않고 환경변수로 등록해놓고 사용함
-# @router.get("/run-kakao-auth")
-# def run_kakao_auth(user_id: str = Query(..., alias="user-id"), db: Session = Depends(get_db)):
-#     # 1. API Key 조회
-#     logging.info("GET /run-kakao-auth start")
-#     api_key = get_api_key(user_id, db)
-
-#     return JSONResponse({"api_key": api_key})
-
-
 # 카카오 간편인증 - 인가 코드 받기
 @router.get("/login")
 def login(redirect_url: str = Query(..., alias="redirect-url"), api_key: str = Query(..., alias="api-key")):
@@ -43,7 +35,7 @@ def login(redirect_url: str = Query(..., alias="redirect-url"), api_key: str = Q
 
     # 카카오 인증 url로 get 요청
     try:
-        ext_url = f"{AUTHORIZE_ENDPOINT}?response_type=code&client_id={api_key}&redirect_uri={redirect_url}"
+        ext_url = f"{KAKAO_AUTHORIZE_ENDPOINT}?response_type=code&client_id={api_key}&redirect_uri={redirect_url}"
         logging.info(f"request url for kakao : {ext_url}")
         response = requests.get(ext_url)
 
@@ -57,16 +49,13 @@ def login(redirect_url: str = Query(..., alias="redirect-url"), api_key: str = Q
 
 
 # 카카오 간편인증 - Access Token 발급받기
-@router.post("/access-token",
-            summary="access token 발급",
-            description="카카오 OAuth2.0 access token을 발급받습니다.",
-            response_description="access token 반환")
+@router.post("/access-token", summary="access token 발급", description="카카오 OAuth2.0 access token을 발급받습니다.", response_description="access token 반환")
 def get_access_token(token_request: TokenRequest):
     logging.info("POST /get_access_token start")
 
     try:
         response = requests.post(
-            ACCESS_TOKEN_ENDPOINT,
+            KAKAO_ACCESS_TOKEN_ENDPOINT,
             data=token_request.dict(exclude_none=True)
         )
         response.raise_for_status()
@@ -81,10 +70,7 @@ def get_access_token(token_request: TokenRequest):
         raise HTTPException(status_code=500, detail="Access Token 발급 실패")
 
 
-@router.post("/verify-id-token",
-            summary="jwt 토큰 인증",
-            description="jwt를 이용하여 토큰 유효성을 검증합니다.",
-            response_description="인증된 토큰 정보")
+@router.post("/verify-id-token", summary="jwt 토큰 인증", description="jwt를 이용하여 토큰 유효성을 검증합니다.", response_description="인증된 토큰 정보")
 def verify_id_token(id_token: str):
     try:
         # ID 토큰의 유효성을 검증합니다. 여기서 공개 키를 사용하여 서명을 검증합니다.
@@ -104,7 +90,7 @@ def get_user_info(access_token: str):
         headers = {
             "Authorization": f"Bearer {access_token}"
         }
-        response = requests.get(USER_INFO_ENDPOINT, headers=headers)
+        response = requests.get(KAKAO_USER_INFO_ENDPOINT, headers=headers)
         response.raise_for_status()
         user_info = response.json()
 
@@ -113,6 +99,32 @@ def get_user_info(access_token: str):
     except requests.RequestException as e:
         logging.error(f"사용자 정보 조회 실패 : {e}")
         raise HTTPException(status_code=500, detail="사용자 정보 조회 실패")
+
+
+@router.post("/logout-access-token")
+def logout_by_access_token(request: KakaoLogoutRequest):
+    logging.info("POST /logout_by_access_token start")
+    
+    access_token = request.access_token
+    target_id = request.target_id
+    try:
+        headers = {
+            "Authorization": f"Bearer {access_token}"
+        }
+        
+        data = {
+            "target_id_type": "user_id",
+            "target_id": target_id
+        }
+        response = requests.post(KAKAO_LOGOUT_ENDPOINT, headers=headers, data=data)
+        response.raise_for_status()
+        logout_info = response.json()
+        
+        return JSONResponse(content=logout_info)
+    
+    except requests.RequestException as e:
+        logging.error(f"로그아웃 실패 : {e}")
+        raise HTTPException(status_code=500, detail="로그아웃 실패")
 
 # ------------------------------------------------------------------------------------- #
 
@@ -138,7 +150,7 @@ def get_auth_code(redirect_uri: str, api_key: str):
 
     # 카카오 인증 url로 get 요청
     try:
-        ext_url = f"{AUTHORIZE_ENDPOINT}?response_type=code&client_id={api_key}&redirect_uri={redirect_uri}"
+        ext_url = f"{KAKAO_AUTHORIZE_ENDPOINT}?response_type=code&client_id={api_key}&redirect_uri={redirect_uri}"
         logging.info(f"request url for kakao : {ext_url}")
         response = requests.get(ext_url)
 
