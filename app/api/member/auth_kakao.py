@@ -1,6 +1,6 @@
 from fastapi import Depends, APIRouter, HTTPException, Query
 from fastapi.responses import RedirectResponse, JSONResponse
-from app.schemas.auth_kakao import TokenRequest, TokenResponse, KakaoLogoutRequest
+from app.schemas.auth_kakao import TokenRequest, TokenResponse, KakaoLogoutRequest, KakaoLoginUserInfo
 import requests
 import logging
 import jwt
@@ -70,6 +70,7 @@ def get_access_token(token_request: TokenRequest):
         raise HTTPException(status_code=500, detail="Access Token 발급 실패")
 
 
+# token 유효성 검증
 @router.post("/verify-id-token", summary="jwt 토큰 인증", description="jwt를 이용하여 토큰 유효성을 검증합니다.", response_description="인증된 토큰 정보")
 def verify_id_token(id_token: str):
     try:
@@ -82,6 +83,7 @@ def verify_id_token(id_token: str):
     
 
 
+# 사용자 정보 조회
 @router.get("/get-user-info")
 def get_user_info(access_token: str):
     logging.info("POST /get_user_info start")
@@ -101,6 +103,7 @@ def get_user_info(access_token: str):
         raise HTTPException(status_code=500, detail="사용자 정보 조회 실패")
 
 
+# access token 사용한 로그아웃
 @router.post("/logout-access-token")
 def logout_by_access_token(request: KakaoLogoutRequest):
     logging.info("POST /logout_by_access_token start")
@@ -125,6 +128,17 @@ def logout_by_access_token(request: KakaoLogoutRequest):
     except requests.RequestException as e:
         logging.error(f"로그아웃 실패 : {e}")
         raise HTTPException(status_code=500, detail="로그아웃 실패")
+
+
+# 사용자 로그인 정보 저장
+@router.post("/create-user-info")
+def create_user_info(request: KakaoLoginUserInfo, db: Session = Depends(get_db)):
+    return ""
+
+# db에 저장된 사용자 정보 조회
+@router.post("/read-user-info")
+def read_user_info():
+    return ""
 
 # ------------------------------------------------------------------------------------- #
 
