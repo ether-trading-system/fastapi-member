@@ -1,6 +1,6 @@
 from fastapi import Depends, APIRouter, HTTPException, Query
 from fastapi.responses import RedirectResponse, JSONResponse
-from app.schemas.auth_kakao import TokenRequest, TokenResponse, KakaoLogoutRequest, KakaoLoginUserInfo
+from app.schemas.auth_kakao import TokenRequest, TokenResponse, KakaoLogoutRequest
 import requests
 import logging
 import jwt
@@ -129,16 +129,6 @@ def logout_by_access_token(request: KakaoLogoutRequest):
         logging.error(f"로그아웃 실패 : {e}")
         raise HTTPException(status_code=500, detail="로그아웃 실패")
 
-
-# 사용자 로그인 정보 저장
-@router.post("/create-user-info")
-def create_user_info(request: KakaoLoginUserInfo, db: Session = Depends(get_db)):
-    return ""
-
-# db에 저장된 사용자 정보 조회
-@router.post("/read-user-info")
-def read_user_info():
-    return ""
 
 # ------------------------------------------------------------------------------------- #
 

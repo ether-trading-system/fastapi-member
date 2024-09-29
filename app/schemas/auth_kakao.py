@@ -22,28 +22,3 @@ class TokenResponse(BaseModel):
 class KakaoLogoutRequest(BaseModel):
     access_token: str
     target_id: int
-
-
-class KakaoLoginUserInfo(BaseModel):
-    # 사용자 정보
-    service_type: str
-    user_id: str
-    nickname: str
-    name: str
-    profile_image: str
-    thumbnail_image: str
-    email_address: str
-    connected_at: datetime
-
-    # access token 정보
-    access_token: str
-    token_type: str
-    refresh_token: str
-    expires_in: int
-    scope: str
-    refresh_token_expires_in: int
-
-    create_date: datetime
-    create_by: str
-    modify_date: datetime
-    modify_by: str
