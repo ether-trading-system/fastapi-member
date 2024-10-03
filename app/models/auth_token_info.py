@@ -1,5 +1,4 @@
 from sqlalchemy import Column, String, Integer, DateTime
-from app.core.db_manager import Base
 
 class AuthTokenInfo(Base):
     __tablename__ = 'T_AUTH_TOKEN_INFO'
