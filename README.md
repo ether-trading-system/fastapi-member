@@ -32,10 +32,6 @@
     COMMON_DEBUG_MODE=True                  # Debug Mode
     COMMON_APP_HOST=localhost               # FastAPI App 실행 host
     COMMON_APP_PORT=9000                    # FastAPI App 실행 Port
-
-    DB_URL=supabaseURL                      # DB url
-    DB_PORT=3000                            # DB 포트
-    DB_API_KEY=supabaseKey                  # supbase 프로젝트 key
     ```
 
 4. **FastAPI 서버 실행**
