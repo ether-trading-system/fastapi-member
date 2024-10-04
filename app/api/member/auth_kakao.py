@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import RedirectResponse, JSONResponse
-from app.schemas.auth_kakao import KakaoTokenRequest, KakaoTokenResponse, KakaoLogoutRequest
+from app.dto.auth_kakao import KakaoTokenRequest, KakaoTokenResponse, KakaoLogoutRequest
 import requests
 import logging
 

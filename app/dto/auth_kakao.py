@@ -10,7 +10,7 @@ class KakaoTokenRequest(BaseModel):
     client_secret: str = None                                           # 보안 강화용, 필수 X
 
 
-# Kakao 서버에서 받은 Access Token 본문
+# Kakao 서버에서 받은 Access Token 본문 타입
 class KakaoTokenResponse(BaseModel):
     token_type: str
     access_token: str
@@ -21,7 +21,7 @@ class KakaoTokenResponse(BaseModel):
     scope: str = None
     
 
-# Access Token 방식의 Logout 요청
+# Access Token 방식의 Logout 요청 타입
 class KakaoLogoutRequest(BaseModel):
     access_token: str
     target_id: int
