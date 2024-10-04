@@ -3,6 +3,7 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from app.schemas.auth_kakao import KakaoTokenRequest, KakaoTokenResponse, KakaoLogoutRequest
 import requests
 import logging
+from common.utils.postgresql_helper import get_db, engine
 
 
 router = APIRouter()
@@ -69,7 +70,7 @@ async def get_access_token(token_request: KakaoTokenRequest):
     
 
 
-# 사용자 정보 조회
+# 사용자 정보 조회(access_token 요청방식)
 @router.get("/get-user-info")
 async def get_user_info(access_token: str):
     logging.info("POST /get_user_info start")
