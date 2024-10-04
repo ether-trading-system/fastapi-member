@@ -2,12 +2,10 @@ from fastapi import FastAPI
 from app.api.member import auth_kis, auth_kakao, user
 from fastapi.middleware.cors import CORSMiddleware
 
-from sqlalchemy.orm import Session, declarative_base
 from common.utils.postgresql_helper import get_db, engine
-
 from contextlib import asynccontextmanager
+from models import Base
 
-Base = declarative_base()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

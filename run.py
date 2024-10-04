@@ -1,7 +1,11 @@
+import os
+
 import uvicorn
 import webbrowser
 from threading import Timer
 from app.core.config import BaseConfig
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 baseConfig = BaseConfig()
 

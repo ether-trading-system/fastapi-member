@@ -1,12 +1,28 @@
-from datetime import date
-from typing import Optional
+from sqlalchemy import Column, String, Numeric, Date
+from models import Base
 
-class User:
-    def __init__(self, access_token: str, expired_date: date, access_token_type: str, expires_in: int):
-        self.access_token = access_token
-        self.expired_date = expired_date
-        self.access_token_type = access_token_type
-        self.expires_in = expires_in
-
-    def __repr__(self):
-        return f"User(access_token={self.access_token}, expired_date={self.expired_date}, access_token_type={self.access_token_type}, expires_in={self.expires_in})"
+class UserLoginInfo(Base):
+    __tablename__ = "user_login_info"
+    
+    service_type = Column(String, primary_key=True, nullable=False)
+    user_id = Column(String, primary_key=True, nullable=False)
+    nickname = Column(String, nullable=True)
+    name = Column(String, nullable=True)
+    
+    profile_image = Column(String, nullable=True)
+    thumbnail_image = Column(String, nullable=True)
+    
+    email_address = Column(String, nullable=True)
+    connected_at = Column(Date, nullable=True)
+    
+    access_token = Column(String, nullable=True)
+    token_type = Column(String, nullable=True)
+    refresh_token = Column(String, nullable=True)
+    expires_in = Column(Numeric, nullable=True)
+    scope = Column(String, nullable=True)
+    refresh_token_expires_in = Column(Numeric, nullable=True)
+    
+    create_date = Column(Date, nullable=True)
+    create_by = Column(String, nullable=True)
+    modify_date = Column(Date, nullable=True)
+    modify_by = Column(String, nullable=True)
