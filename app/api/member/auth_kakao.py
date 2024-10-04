@@ -3,7 +3,6 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from app.schemas.auth_kakao import KakaoTokenRequest, KakaoTokenResponse, KakaoLogoutRequest
 import requests
 import logging
-from common.utils.postgresql_helper import get_db, engine
 
 
 router = APIRouter()
@@ -116,6 +115,12 @@ async def logout_by_access_token(request: KakaoLogoutRequest):
         logging.error(f"로그아웃 실패 : {e}")
         raise HTTPException(status_code=500, detail="로그아웃 실패")
 
+
+
+# 사용자 정보 조회(등록된 사용자 id)
+@router.get("/get-user-id/{kakao_id}")
+async def get_user_info(kakao_id: str):
+    return ""
 
 # ------------------------------------------------------------------------------------- #
 
