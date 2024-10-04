@@ -2,6 +2,9 @@ import datetime
 from typing import Optional
 
 
+"""
+B/E(React)에서 
+"""
 class TokenRequest:
     def __init__(self, grant_type: str, client_id: int, redirect_uri: str, code: str, client_secret: str):
         self.grant_type = grant_type

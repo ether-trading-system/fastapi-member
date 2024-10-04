@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import RedirectResponse, JSONResponse
-from app.schemas.auth_kakao import TokenRequest, KakaoLogoutRequest
+from app.schemas.auth_kakao import TokenRequest, TokenResponse, KakaoLogoutRequest
 import requests
 import logging
 
@@ -46,10 +46,10 @@ async def get_access_token(token_request: TokenRequest):
         )
         response.raise_for_status()
 
-        token_response = response.json()
+        token_response = TokenResponse(**response.json())
 
-        logging.info(token_response)
-        return JSONResponse(content=token_response)
+        logging.info(token_response.dict())
+        return JSONResponse(content=token_response.dict())
 
     except requests.RequestException as e:
         logging.error(f"Access Token 발급에 실패하였습니다 : {e}")
