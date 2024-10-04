@@ -1,7 +1,8 @@
-import datetime
 from pydantic import BaseModel, Field
 
-class TokenRequest(BaseModel):
+
+# F/E(React)에서 Access Token 발급 요청 Payload 타입
+class KakaoTokenRequest(BaseModel):
     grant_type: str = Field(default="authorization_code", Literal=True)   # authorization_code 고정
     client_id: str                                                      # REST API 키
     redirect_uri: str                                                   # 인가코드가 Redirect된 URI
@@ -9,7 +10,8 @@ class TokenRequest(BaseModel):
     client_secret: str = None                                           # 보안 강화용, 필수 X
 
 
-class TokenResponse(BaseModel):
+# Kakao 서버에서 받은 Access Token 본문
+class KakaoTokenResponse(BaseModel):
     token_type: str
     access_token: str
     id_token: str = None
@@ -18,7 +20,8 @@ class TokenResponse(BaseModel):
     refresh_token_expires_in: int
     scope: str = None
     
-    
+
+# Access Token 방식의 Logout 요청
 class KakaoLogoutRequest(BaseModel):
     access_token: str
     target_id: int

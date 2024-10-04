@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import RedirectResponse, JSONResponse
-from app.schemas.auth_kakao import TokenRequest, TokenResponse, KakaoLogoutRequest
+from app.schemas.auth_kakao import KakaoTokenRequest, KakaoTokenResponse, KakaoLogoutRequest
 import requests
 import logging
 
@@ -36,7 +36,7 @@ async def login(redirect_url: str = Query(..., alias="redirect-url"), api_key: s
 
 # 카카오 간편인증 - Access Token 발급받기
 @router.post("/access-token", summary="access token 발급", description="카카오 OAuth2.0 access token을 발급받습니다.", response_description="access token 반환")
-async def get_access_token(token_request: TokenRequest):
+async def get_access_token(token_request: KakaoTokenRequest):
     logging.info("POST /get_access_token start")
 
     try:
@@ -46,7 +46,7 @@ async def get_access_token(token_request: TokenRequest):
         )
         response.raise_for_status()
 
-        token_response = TokenResponse(**response.json())
+        token_response = KakaoTokenResponse(**response.json())
 
         logging.info(token_response.dict())
         return JSONResponse(content=token_response.dict())
