@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
-from datetime import date
+from datetime import datetime
 
 
 class UserLoginInfoRead(BaseModel):
@@ -13,7 +13,7 @@ class UserLoginInfoRead(BaseModel):
     thumbnail_image: Optional[str] = None
 
     email_address: Optional[str] = None
-    connected_at: Optional[date] = None
+    connected_at: Optional[datetime] = None
 
     access_token: Optional[str] = None
     token_type: Optional[str] = None
@@ -22,9 +22,9 @@ class UserLoginInfoRead(BaseModel):
     scope: Optional[str] = None
     refresh_token_expires_in: Optional[float] = None
 
-    create_date: Optional[date] = None
+    create_date: Optional[datetime] = None
     create_by: Optional[str] = None
-    modify_date: Optional[date] = None
+    modify_date: Optional[datetime] = None
     modify_by: Optional[str] = None
     
     
@@ -42,7 +42,7 @@ class UserLoginInfoCreate(BaseModel):
     thumbnail_image: Optional[str] = None
 
     email_address: Optional[str] = None
-    connected_at: Optional[date] = None
+    connected_at: Optional[datetime] = None
 
     access_token: Optional[str] = None
     token_type: Optional[str] = None
@@ -51,9 +51,9 @@ class UserLoginInfoCreate(BaseModel):
     scope: Optional[str] = None
     refresh_token_expires_in: Optional[float] = None
 
-    create_date: Optional[date] = None
+    create_date: Optional[datetime] = None
     create_by: Optional[str] = None
-    modify_date: Optional[date] = None
+    modify_date: Optional[datetime] = None
     modify_by: Optional[str] = None
     
     

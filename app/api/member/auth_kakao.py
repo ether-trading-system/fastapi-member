@@ -1,5 +1,6 @@
 import requests
 import logging
+from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Query, Depends
 from fastapi.responses import RedirectResponse, JSONResponse
@@ -143,12 +144,33 @@ async def get_user_info(kakao_id: str, db: AsyncSession = Depends(get_db)):
 
 # 신규 사용자 생성
 @router.post("/create-kakao-user")
-async def create_kakao_user(db: AsyncSession = Depends(get_db)):
+async def create_kakao_user(user_info: UserLoginInfoCreate, db: AsyncSession = Depends(get_db)):
     logging.info("POST /create_kakao_user start")
     
+    current_time = datetime.now()
     new_user = UserLoginInfo(
         service_type='kakao',
-        user_id='1234'
+        user_id=user_info.user_id,
+        nickname=user_info.nickname,
+        name=user_info.name,
+        
+        profile_image=user_info.profile_image,
+        thumbnail_image=user_info.thumbnail_image,
+        
+        email_address=user_info.email_address,
+        connected_at=user_info.connected_at,
+        
+        access_token=user_info.access_token,
+        token_type=user_info.token_type,
+        refresh_token=user_info.refresh_token,
+        expires_in=user_info.expires_in,
+        scope=user_info.scope,
+        refresh_token_expires_in=user_info.refresh_token_expires_in,
+        
+        create_date=current_time,
+        create_by='FastAPI member',
+        modify_date=current_time,
+        modify_by='FastAPI member'
     )
     
     try:
