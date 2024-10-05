@@ -3,12 +3,13 @@ import logging
 
 from fastapi import APIRouter, HTTPException, Query, Depends
 from fastapi.responses import RedirectResponse, JSONResponse
-from app.dto.auth_kakao import KakaoTokenRequest, KakaoTokenResponse, KakaoLogoutRequest
-from common.utils.postgresql_helper import get_db
 
+from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.dto.auth_kakao import KakaoTokenRequest, KakaoTokenResponse, KakaoLogoutRequest
+from common.utils.postgresql_helper import get_db
 from app.models.users import UserLoginInfo
 from app.schemas.users import UserLoginInfoRead, UserLoginInfoCreate
 
@@ -128,14 +129,24 @@ async def logout_by_access_token(request: KakaoLogoutRequest):
 
 # 사용자 정보 조회(등록된 사용자 id)
 @router.get("/get-user-id/{kakao_id}")
-async def get_user_info(kakao_id: str):
-    return ""
+async def get_user_info(kakao_id: str, db: AsyncSession = Depends(get_db)):
+    logging.info("GET /get_user_info start")
+    
+    result = await db.execute(select(UserLoginInfo).where(UserLoginInfo.user_id == kakao_id))
+    select_user = result.scalar_one_or_none()
+    
+    if(select_user is None):
+        raise HTTPException(status_code=404, detail="사용자를 찾을 수 없음")
+    
+    return UserLoginInfoRead.from_orm((select_user))
 
 
 # 신규 사용자 생성
 @router.post("/create-kakao-user")
 async def create_kakao_user(db: AsyncSession = Depends(get_db)):
-    new_user = UserLoginInfoCreate(
+    logging.info("POST /create_kakao_user start")
+    
+    new_user = UserLoginInfo(
         service_type='kakao',
         user_id='1234'
     )
@@ -145,7 +156,10 @@ async def create_kakao_user(db: AsyncSession = Depends(get_db)):
         await db.commit()
         await db.refresh(new_user)
         
-        return { "message": "User Create successfully", "user": new_user }
+        logging.info(f"사용자 등록 완료")
+        return { "user": new_user }
     except SQLAlchemyError as e:
+        logging.error(f"신규 사용자 등록 실패 : {str(e)}")
         await db.rollback()
-        return { "error": str(e) }
+        
+        raise HTTPException(Status=400, detail="신규 사용자 등록 실패")

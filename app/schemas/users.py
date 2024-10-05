@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import date
 
@@ -26,6 +26,9 @@ class UserLoginInfoRead(BaseModel):
     create_by: Optional[str] = None
     modify_date: Optional[date] = None
     modify_by: Optional[str] = None
+    
+    
+    model_config = ConfigDict(from_attributes=True)
 
 
 # 요청 시 사용할 스키마 (사용자 정보 등록, 업데이트 등)
@@ -52,5 +55,7 @@ class UserLoginInfoCreate(BaseModel):
     create_by: Optional[str] = None
     modify_date: Optional[date] = None
     modify_by: Optional[str] = None
-
+    
+    
+    model_config = ConfigDict(from_attributes=True)
 
