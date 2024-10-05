@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from common.utils.postgresql_helper import get_db, engine
 from contextlib import asynccontextmanager
-from app.models import Base
+from app.models.base import Base
 
 
 

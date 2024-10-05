@@ -9,8 +9,8 @@ from common.utils.postgresql_helper import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 
-# from models.users import UserLoginInfo
-# from schemas.users import UserLoginInfoCreate
+from app.models.users import UserLoginInfo
+from app.schemas.users import UserLoginInfoRead, UserLoginInfoCreate
 
 
 
@@ -135,18 +135,17 @@ async def get_user_info(kakao_id: str):
 # 신규 사용자 생성
 @router.post("/create-kakao-user")
 async def create_kakao_user(db: AsyncSession = Depends(get_db)):
-    # new_user = UserLoginInfoCreate(
-    #     service_type='kakao',
-    #     user_id='1234'
-    # )
+    new_user = UserLoginInfoCreate(
+        service_type='kakao',
+        user_id='1234'
+    )
     
-    # try:
-    #     db.add(new_user)
-    #     await db.commit()
-    #     await db.refresh(new_user)
+    try:
+        db.add(new_user)
+        await db.commit()
+        await db.refresh(new_user)
         
-    #     return { "message": "User Create successfully", "user": new_user }
-    # except SQLAlchemyError as e:
-    #     await db.rollback()
-    #     return { "error": str(e) }
-    return ""
+        return { "message": "User Create successfully", "user": new_user }
+    except SQLAlchemyError as e:
+        await db.rollback()
+        return { "error": str(e) }
