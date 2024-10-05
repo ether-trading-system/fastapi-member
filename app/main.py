@@ -4,13 +4,15 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from common.utils.postgresql_helper import get_db, engine
 from contextlib import asynccontextmanager
-from models import Base
+from app.models import Base
+
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        print("create all orm instance")
     yield
 
 app = FastAPI(lifespan=lifespan)

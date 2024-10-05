@@ -1,8 +1,17 @@
-from fastapi import APIRouter, HTTPException, Query
-from fastapi.responses import RedirectResponse, JSONResponse
-from app.dto.auth_kakao import KakaoTokenRequest, KakaoTokenResponse, KakaoLogoutRequest
 import requests
 import logging
+
+from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi.responses import RedirectResponse, JSONResponse
+from app.dto.auth_kakao import KakaoTokenRequest, KakaoTokenResponse, KakaoLogoutRequest
+from common.utils.postgresql_helper import get_db
+
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import SQLAlchemyError
+
+# from models.users import UserLoginInfo
+# from schemas.users import UserLoginInfoCreate
+
 
 
 router = APIRouter()
@@ -122,6 +131,22 @@ async def logout_by_access_token(request: KakaoLogoutRequest):
 async def get_user_info(kakao_id: str):
     return ""
 
-# ------------------------------------------------------------------------------------- #
 
-
+# 신규 사용자 생성
+@router.post("/create-kakao-user")
+async def create_kakao_user(db: AsyncSession = Depends(get_db)):
+    # new_user = UserLoginInfoCreate(
+    #     service_type='kakao',
+    #     user_id='1234'
+    # )
+    
+    # try:
+    #     db.add(new_user)
+    #     await db.commit()
+    #     await db.refresh(new_user)
+        
+    #     return { "message": "User Create successfully", "user": new_user }
+    # except SQLAlchemyError as e:
+    #     await db.rollback()
+    #     return { "error": str(e) }
+    return ""
