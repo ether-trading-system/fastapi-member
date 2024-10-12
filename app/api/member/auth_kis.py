@@ -5,7 +5,7 @@ from sqlalchemy import select
 import requests
 import logging
 
-from app.schemas.users import UserInvestAPIInfoRead
+from app.schemas.users import UserInvestAPIInfoRead, UserInvestAPIInfoCreate
 from app.models.users import UserInvestAPIInfo
 from common.utils.postgresql_helper import get_db
 
@@ -13,6 +13,53 @@ router = APIRouter()
 
 REAL_INV_URL = "https://openapi.koreainvestment.com:9443"
 DEMO_INV_URL = "https://openapivts.koreainvestment.com:29443"
+
+
+
+# 한투 - 신규 API Key 등록
+@router.post("/create-kis-api")
+async def create_kis_api(kis_user_info: UserInvestAPIInfoCreate, db: Session = Depends(get_db)):
+        logging.info("POST /create-user start")
+
+        # 기존 유저 정보가 있는지 확인
+        result = await db.execute(select(UserInvestAPIInfo).filter(
+            UserInvestAPIInfo.service_type == kis_user_info.service_type,
+            UserInvestAPIInfo.user_id == kis_user_info.user_id,
+            UserInvestAPIInfo.account == kis_user_info.account
+        ))
+        db_user = result.scalars().first()
+
+        if db_user:
+            raise HTTPException(status_code=400, detail="유저 정보가 존재합니다.")
+
+        # 신규 유저 등록
+        new_user = UserInvestAPIInfo(
+            service_type = kis_user_info.service_type,
+            user_id = kis_user_info.user_id,
+            account = kis_user_info.account,
+            
+            api_key = kis_user_info.api_key,
+            app_secret = kis_user_info.app_secret,
+            
+            create_at = datetime.now(),
+            create_by = "FastAPI User",
+            modify_at = datetime.now(),
+            modify_by = "FastAPI User"
+        )
+
+        try:
+            db.add(new_user)
+            await db.commit()
+            await db.refresh(new_user)
+
+            logging.info("신규 사용자 등록 완료")
+            return new_user
+
+        except Exception as e:
+            logging.error(f"사용자 등록 중 오류 발생: {str(e)}")
+            await db.rollback()
+            raise HTTPException(status_code=500, detail="사용자 등록 중 오류가 발생했습니다.")
+
 
 
 # 한투 - access token 발급(간편인증)
@@ -58,10 +105,10 @@ async def run_simple_auth(kis_user_info: UserInvestAPIInfoRead, db: Session = De
                 db_user.access_token = access_token_info.get("access_token")
                 db_user.token_type = access_token_info.get("token_type")
                 db_user.expires_in = access_token_info.get("expires_in")
-                db_user.access_token_expires = datetime.utcnow() + timedelta(seconds=db_user.expires_in)
+                db_user.access_token_expires = datetime.now() + timedelta(seconds=db_user.expires_in)
                 
                 # modify_at, modify_by 업데이트
-                db_user.modify_at = datetime.utcnow()
+                db_user.modify_at = datetime.now()
                 db_user.modify_by = "FastAPI User"
 
                 # 변경사항 적용
