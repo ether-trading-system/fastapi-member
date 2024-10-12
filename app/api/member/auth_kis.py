@@ -1,95 +1,82 @@
-from fastapi import APIRouter, HTTPException
-from datetime import datetime
-from typing import List
-from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException, Depends
+from datetime import datetime, timedelta
+from sqlalchemy.orm import Session
+from sqlalchemy import select
 import requests
 import logging
+
+from app.schemas.users import UserInvestAPIInfoRead
+from app.models.users import UserInvestAPIInfo
+from common.utils.postgresql_helper import get_db
 
 router = APIRouter()
 
 REAL_INV_URL = "https://openapi.koreainvestment.com:9443"
 DEMO_INV_URL = "https://openapivts.koreainvestment.com:29443"
 
-# ===========================================================================================
-# 일단은 In-Memory storage에 저장... 추후에 DB로 관리
-# API_KEYS_DB = {
-#     "kimdaewhi": {
-#         "appkey": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",               # KIS(한투)에서 발급받은 appkey
-#         "appsecret": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"   # KIS(한투)에서 발급받은 appsecret
-#     },    
-# }
-# MEMBERS_DB: List[User] = []
-
-# ===========================================================================================
-
-
-# 한투 - 유저 등록
-# @router.post("/register", 
-#              status_code=201,
-#              summary="신규 유저 생성",
-#              description="api key, api_secret, id가 포함된 신규 유저를 생성합니다.",
-#              response_description="응답 처리 결과")
-# def register(request: RegisterRequest):
-#     if request.username in API_KEYS_DB:
-#         raise HTTPException(status_code=400, detail="Username already exists")
-#     API_KEYS_DB[request.username] = {
-#         "api_key": request.api_key,
-#         "api_secret": request.api_secret
-#     }
-#     return {"msg": "User registered successfully"}
-
-
 
 # 한투 - access token 발급(간편인증)
-# @router.post("/get-access-token-from-kakao", response_model=UserResponse)
-# def run_simple_auth(request: SimpleAuthRequest):
-#     if request.username not in API_KEYS_DB:
-#         raise HTTPException(status_code=404, detail="User not found")
-    
-#     user_api_info = API_KEYS_DB[request.username]
-#     user_appkey = user_api_info["appkey"]
-#     user_appsecret = user_api_info["appsecret"]
+@router.post("/access-token")
+async def run_simple_auth(kis_user_info: UserInvestAPIInfoRead, db: Session = Depends(get_db)):
+    logging.info("POST /access-token start")
+    # user_appkey = ""
+    # user_appsecret = ""
+    print(f"kis_user_info.api_key : {kis_user_info.api_key}")
+    print(f"kis_user_info.app_secret : {kis_user_info.app_secret}")
+    try:
+        response = requests.post(f"{DEMO_INV_URL}/oauth2/tokenP", json={
+            "grant_type": "client_credentials",     # 고정
+            "appkey": kis_user_info.api_key,
+            "appsecret": kis_user_info.app_secret
+        })
 
-#     try:
-#         response = requests.post(f"{DEMO_INV_URL}/oauth2/tokenP", json={
-#             "grant_type": "client_credentials",
-#             "appkey": user_appkey,
-#             "appsecret": user_appsecret
-#         })
+        if response.status_code == 200:
+            access_token_info = response.json()
 
-#         if response.status_code == 200:
-#             auth_data = response.json()
-
-#             if "error_code" in auth_data:
-#                 error_code = auth_data["error_code"]
-#                 if error_code == "EGW00133":
-#                     raise HTTPException(
-#                         status_code=429, 
-#                         detail=f"Rate limit exceeded. Try again after 1 minute"
-#                     )
-#                 else:
-#                     logging.error(f"API Error: {error_code} - {auth_data.get('error_message', 'No error message')}")
-#                     raise HTTPException(status_code=400, detail="Authentication failed due to API error")
+            if "error_code" in access_token_info:
+                error_code = access_token_info["error_code"]
+                if error_code == "EGW00133":
+                    raise HTTPException(status_code=429, detail=f"토큰 발급은 1분당 1회만 가능합니다.")
+                else:
+                    logging.error(f"API Error: {error_code} - {access_token_info.get('error_message', 'No error message')}")
+                    raise HTTPException(status_code=400, detail="토큰 발급에 실패하였습니다. API 요청 전문을 확인하세요.")
             
-#             # error_code 키가 없으면
-#             else:
-#                 new_member = User(
-#                     access_token = auth_data["access_token"],
-#                     expired_date = datetime.strptime(auth_data["access_token_token_expired"], "%Y-%m-%d %H:%M:%S").date(),
-#                     access_token_type = auth_data["token_type"],
-#                     expires_in = auth_data["expires_in"]
-#                 )
+            # error_code 키가 없으면
+            else:
+                logging.info("KIS 토큰 발급 성공")
+                result = await db.execute(select(UserInvestAPIInfo).filter(
+                    UserInvestAPIInfo.service_type == kis_user_info.service_type,
+                    UserInvestAPIInfo.user_id == kis_user_info.user_id,
+                    UserInvestAPIInfo.account == kis_user_info.account
+                ))
+                db_user = result.scalars().first()
+                
+                if not db_user:
+                    raise HTTPException(status_code=404, detail="유저 정보를 찾을 수 없습니다.")
+                
+                # 토큰 정보 업데이트
+                db_user.access_token = access_token_info.get("access_token")
+                db_user.token_type = access_token_info.get("token_type")
+                db_user.expires_in = access_token_info.get("expires_in")
+                db_user.access_token_expires = datetime.utcnow() + timedelta(seconds=db_user.expires_in)
+                
+                # modify_at, modify_by 업데이트
+                db_user.modify_at = datetime.utcnow()
+                db_user.modify_by = "FastAPI User"
 
-#             MEMBERS_DB.append(new_member)
-#             return new_member
+                # 변경사항 적용
+                await db.commit()
+                await db.refresh(db_user)
+                
+                return db_user
         
-#         else:
-#             logging.error(f"Authentication failed: {response.status_code} - {response.text}")
-#             raise HTTPException(status_code=response.status_code, detail="Authentication failed")
+        else:
+            logging.error(f"Authentication failed: {response.status_code} - {response.text}")
+            raise HTTPException(status_code=response.status_code, detail="Authentication failed")
         
-#     except Exception as e:
-#         logging.error(f"An error occurred: {e}")
-#         raise HTTPException(status_code=500, detail="Internal Server Error")
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 
 

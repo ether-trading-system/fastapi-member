@@ -167,9 +167,9 @@ async def create_kakao_user(user_info: UserLoginInfoCreate, db: AsyncSession = D
         scope=user_info.scope,
         refresh_token_expires_in=user_info.refresh_token_expires_in,
         
-        create_date=current_time,
+        create_at=current_time,
         create_by='FastAPI member',
-        modify_date=current_time,
+        modify_at=current_time,
         modify_by='FastAPI member'
     )
     
