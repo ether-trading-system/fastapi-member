@@ -17,9 +17,9 @@ DEMO_INV_URL = "https://openapivts.koreainvestment.com:29443"
 
 
 # 한투 - 신규 API Key 등록
-@router.post("/create-kis-api")
-async def create_kis_api(kis_user_info: UserInvestAPIInfoCreate, db: Session = Depends(get_db)):
-        logging.info("POST /create-user start")
+@router.post("/regist-kis-api")
+async def regist_kis_api(kis_user_info: UserInvestAPIInfoCreate, db: Session = Depends(get_db)):
+        logging.info("POST /regist-user start")
 
         # 기존 유저 정보가 있는지 확인
         result = await db.execute(select(UserInvestAPIInfo).filter(
@@ -64,7 +64,7 @@ async def create_kis_api(kis_user_info: UserInvestAPIInfoCreate, db: Session = D
 
 # 한투 - access token 발급(간편인증)
 @router.post("/access-token")
-async def run_simple_auth(kis_user_info: UserInvestAPIInfoRead, db: Session = Depends(get_db)):
+async def get_access_token(kis_user_info: UserInvestAPIInfoRead, db: Session = Depends(get_db)):
     logging.info("POST /access-token start")
     # user_appkey = ""
     # user_appsecret = ""
@@ -128,46 +128,6 @@ async def run_simple_auth(kis_user_info: UserInvestAPIInfoRead, db: Session = De
 
 
 # 한투 - access token 발급(API Key, Secret 사용)
-# @router.post("/get-access-token", response_model=UserResponse,
-#              summary="access token 발급",
-#              description="한국투자증권 access token을 발급받습니다.",
-#              response_description="신규 유저의 토큰 정보 반환")
-# def get_access_token(request: LoginRequest):
-#     try:
-#         response = requests.post(f"{DEMO_INV_URL}/oauth2/tokenP", json={
-#             "grant_type": "client_credentials",
-#             "appkey": request.api_key,
-#             "appsecret": request.api_secret
-#         })
-#         if response.status_code == 200:
-#             auth_data = response.json()
-
-#             if "error_code" in auth_data:
-#                 error_code = auth_data["error_code"]
-#                 if error_code == "EGW00133":
-#                     raise HTTPException(
-#                         status_code=429, 
-#                         detail=f"Rate limit exceeded. Try again after 1 minute"
-#                     )
-#                 else:
-#                     logging.error(f"API Error: {error_code} - {auth_data.get('error_message', 'No error message')}")
-#                     raise HTTPException(status_code=400, detail="Authentication failed due to API error")
-            
-#             # error_code 키가 없으면
-#             else:
-#                 new_member = User(
-#                     access_token = auth_data["access_token"],
-#                     expired_date = datetime.strptime(auth_data["access_token_token_expired"], "%Y-%m-%d %H:%M:%S").date(),
-#                     access_token_type = auth_data["token_type"],
-#                     expires_in = auth_data["expires_in"]
-#                 )
-
-#             MEMBERS_DB.append(new_member)
-
-#             return new_member
-#         else:
-#             logging.error(f"Authentication failed: {response.status_code} - {response.text}")
-#             raise HTTPException(status_code=response.status_code, detail="Authentication failed")
-#     except Exception as e:
-#         logging.error(f"An error occurred: {e}")
-#         raise HTTPException(status_code=500, detail="Internal Server Error")
+@router.post("refresh-token")
+async def refresh_token(user_id: str, access_token: str):
+    return ""
