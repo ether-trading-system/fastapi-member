@@ -36,9 +36,7 @@ app.add_middleware(
 )
 
 # 라우터 추가
-app.include_router(
-    auth_kis.router, prefix="/public/api/member/auth-kis", tags=["auth_KIS"]
-)
+app.include_router(auth_kis.router, prefix=f"{PUBLIC_URL}/auth-kis", tags=["auth_KIS"])
 app.include_router(
     auth_kakao.router, prefix="/public/api/member/auth-kakao", tags=["auth_Kakao"]
 )
