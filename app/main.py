@@ -10,6 +10,8 @@ from app.models.base import Base
 from dotenv import load_dotenv
 import os
 
+load_dotenv()
+
 PUBLIC_URL = os.getenv("PUBLIC_URL")
 print(PUBLIC_URL)
 
