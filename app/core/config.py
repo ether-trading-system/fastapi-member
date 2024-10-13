@@ -6,9 +6,6 @@ from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
 
-# .env 파일 로드
-# load_dotenv()
-
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 env = os.environ.get("ENV", "")
 
@@ -28,22 +25,6 @@ class Settings(BaseSettings, BaseConfig):
         env_file='.env',
         extra='ignore'
     )
-
-
-# DB접속정보
-class DBConfig(BaseSettings):
-    url: str = Field(default='localhost', env='URL')
-    port: int = Field(default=1433, env='PORT')            # PostgreSQL 기본포트
-    api_key: str = Field(default='None', env='API_KEY')
-    uri: str = Field(default='None', env='URI')
-
-    model_config = SettingsConfigDict(
-        env_prefix='DB_',
-        env_file_encoding='utf-8',
-        env_file='.env',
-        extra='ignore'
-    )
-
 
 # 간편인증(OAuth) Base Config - 이게 필요할까? 이건 일회성이 될텐데..
 class OAuthAPIConfig(BaseSettings):
@@ -79,8 +60,6 @@ class SecurityAPIConfig(BaseSettings):
 # 한국투자증권 API
 class KISAPI(SecurityAPIConfig):
     specific_setting: str = Field(default="Specific", env="KIS_SETTING")
-
-
 
 
 load_dotenv()
