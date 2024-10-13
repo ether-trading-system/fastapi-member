@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import os
 
 PUBLIC_URL = os.getenv("PUBLIC_URL")
+print(PUBLIC_URL)
 
 
 @asynccontextmanager
