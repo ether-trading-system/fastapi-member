@@ -61,7 +61,7 @@ async def regist_kis_api(kis_user_info: UserInvestAPIInfoCreate, db: Session = D
             raise HTTPException(status_code=500, detail="사용자 등록 중 오류가 발생했습니다.")
 
 
-
+# 환경변수로 빼기
 MARKET_BROKER_API_URL = "http://localhost:8000/member/get-token"
 
 # 한투 - access token 발급(간편인증)
