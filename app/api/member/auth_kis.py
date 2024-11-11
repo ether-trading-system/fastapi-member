@@ -17,7 +17,7 @@ DEMO_INV_URL = "https://openapivts.koreainvestment.com:29443"
 
 
 # 한투 - 신규 API Key 등록
-@router.post("/regist-kis-api")
+@router.post("/regist-api-info")
 async def regist_kis_api(kis_user_info: UserInvestAPIInfoCreate, db: Session = Depends(get_db)):
         logging.info("POST /regist-user start")
 
@@ -131,6 +131,6 @@ async def get_access_token(kis_user_info: UserInvestAPIInfoRead, db: Session = D
 
 
 # 한투 - access token 발급(API Key, Secret 사용)
-@router.post("refresh-token")
+@router.post("/refresh-token")
 async def refresh_token(user_id: str, access_token: str):
     return ""
