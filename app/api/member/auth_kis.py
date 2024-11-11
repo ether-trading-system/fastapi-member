@@ -62,6 +62,8 @@ async def regist_kis_api(kis_user_info: UserInvestAPIInfoCreate, db: Session = D
 
 
 
+MARKET_BROKER_API_URL = "http://localhost:8000/member/get-token"
+
 # 한투 - access token 발급(간편인증)
 @router.post("/access-token")
 async def get_access_token(kis_user_info: UserInvestAPIInfoRead, db: Session = Depends(get_db)):
@@ -71,11 +73,12 @@ async def get_access_token(kis_user_info: UserInvestAPIInfoRead, db: Session = D
     print(f"kis_user_info.api_key : {kis_user_info.api_key}")
     print(f"kis_user_info.app_secret : {kis_user_info.app_secret}")
     try:
-        response = requests.post(f"{DEMO_INV_URL}/oauth2/tokenP", json={
-            "grant_type": "client_credentials",     # 고정
-            "appkey": kis_user_info.api_key,
-            "appsecret": kis_user_info.app_secret
+        response = requests.post(MARKET_BROKER_API_URL, json={
+            "url": "https://openapivts.koreainvestment.com:29443",
+            "api_key": kis_user_info.api_key,
+            "app_secret": kis_user_info.app_secret
         })
+        print(response.json())
 
         if response.status_code == 200:
             access_token_info = response.json()
