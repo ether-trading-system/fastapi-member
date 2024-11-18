@@ -66,21 +66,21 @@ MARKET_BROKER_API_URL = "http://localhost:8000/member/get-token"
 
 # 한투 - access token 발급(간편인증)
 @router.post("/access-token")
-async def get_access_token(url_div:str, kis_user_info: UserInvestAPIInfoRead):
+async def get_access_token(url_div:str, kis_api_info: UserInvestAPIInfoRead):
     logging.info("POST /access-token start")
 
     # 기본 요청 데이터 구성
     request_data = {
         "url_div": url_div,  # 모의투자
-        "api_key": kis_user_info.api_key,
-        "app_secret": kis_user_info.app_secret
+        "api_key": kis_api_info.api_key,
+        "app_secret": kis_api_info.app_secret
     }
 
     # access_token과 expires_at이 있는 경우에만 추가
-    if kis_user_info.access_token:
-        request_data["access_token"] = kis_user_info.access_token
-    if kis_user_info.access_token_expires:
-        request_data["expires_at"] = kis_user_info.access_token_expires
+    if kis_api_info.access_token:
+        request_data["access_token"] = kis_api_info.access_token
+    if kis_api_info.access_token_expires:
+        request_data["expires_at"] = kis_api_info.access_token_expires
 
     try:
         # Market Broker API에 요청
