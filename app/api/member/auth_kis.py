@@ -66,62 +66,40 @@ MARKET_BROKER_API_URL = "http://localhost:8000/member/get-token"
 
 # 한투 - access token 발급(간편인증)
 @router.post("/access-token")
-async def get_access_token(kis_user_info: UserInvestAPIInfoRead, db: Session = Depends(get_db)):
+async def get_access_token(kis_user_info: UserInvestAPIInfoRead):
     logging.info("POST /access-token start")
 
     access_token = kis_user_info.access_token           # F/E Cookie로부터 전달받은 access token
     expires_at = kis_user_info.access_token_expires     # 토큰만료일자
 
     try:
-        response = requests.post(MARKET_BROKER_API_URL, json={
-            "url_div": "simul",     # 모의투자
-            "api_key": kis_user_info.api_key,
-            "app_secret": kis_user_info.app_secret,
-            "access_token": access_token,
-            "expires_at": expires_at
-        })
+        # access_token과 expires_at이 없는 경우 (신규 발급 요청)
+        if not access_token or not expires_at:
+            logging.info("토큰이 없습니다. 신규 발급을 요청합니다.")
+            response = requests.post(MARKET_BROKER_API_URL, json={
+                "url_div": "simul",  # 모의투자
+                "api_key": kis_user_info.api_key,
+                "app_secret": kis_user_info.app_secret
+            })
+        # access_token이 만료된 경우 (갱신 요청)
+        elif datetime.fromisoformat(expires_at) < datetime.now():
+            logging.info("토큰이 만료되었습니다. 신규 발급을 요청합니다.")
+            response = requests.post(MARKET_BROKER_API_URL, json={
+                "url_div": "simul",
+                "api_key": kis_user_info.api_key,
+                "app_secret": kis_user_info.app_secret
+            })
+        # 유효한 access_token이 존재하는 경우
+        else:
+            logging.info("유효한 토큰이 이미 존재합니다.")
+            return {
+                "access_token": access_token,
+                "expires_at": expires_at
+            }
+        
         print(response.json())
-
         if response.status_code == 200:
             return response.json()
-
-            # if "error_code" in access_token_info:
-            #     error_code = access_token_info["error_code"]
-            #     if error_code == "EGW00133":
-            #         raise HTTPException(status_code=429, detail=f"토큰 발급은 1분당 1회만 가능합니다.")
-            #     else:
-            #         logging.error(f"API Error: {error_code} - {access_token_info.get('error_message', 'No error message')}")
-            #         raise HTTPException(status_code=400, detail="토큰 발급에 실패하였습니다. API 요청 전문을 확인하세요.")
-            
-            # # error_code 키가 없으면
-            # else:
-            #     logging.info("KIS 토큰 발급 성공")
-            #     result = await db.execute(select(UserInvestAPIInfo).filter(
-            #         UserInvestAPIInfo.service_type == kis_user_info.service_type,
-            #         UserInvestAPIInfo.user_id == kis_user_info.user_id,
-            #         UserInvestAPIInfo.account == kis_user_info.account
-            #     ))
-            #     db_user = result.scalars().first()
-                
-            #     if not db_user:
-            #         raise HTTPException(status_code=404, detail="유저 정보를 찾을 수 없습니다.")
-                
-            #     # 토큰 정보 업데이트
-            #     db_user.access_token = access_token_info.get("access_token")
-            #     db_user.token_type = access_token_info.get("token_type")
-            #     db_user.expires_in = access_token_info.get("expires_in")
-            #     db_user.access_token_expires = datetime.now() + timedelta(seconds=db_user.expires_in)
-                
-            #     # modify_at, modify_by 업데이트
-            #     db_user.modify_at = datetime.now()
-            #     db_user.modify_by = "FastAPI User"
-
-            #     # 변경사항 적용
-            #     await db.commit()
-            #     await db.refresh(db_user)
-                
-            #     return db_user
-        
         else:
             logging.error(f"Authentication failed: {response.status_code} - {response.text}")
             raise HTTPException(status_code=response.status_code, detail="Authentication failed")
@@ -129,10 +107,3 @@ async def get_access_token(kis_user_info: UserInvestAPIInfoRead, db: Session = D
     except Exception as e:
         logging.error(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
-
-
-
-# 한투 - access token 발급(API Key, Secret 사용)
-@router.post("/refresh-token")
-async def refresh_token(user_id: str, access_token: str):
-    return ""
