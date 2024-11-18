@@ -66,12 +66,12 @@ MARKET_BROKER_API_URL = "http://localhost:8000/member/get-token"
 
 # 한투 - access token 발급(간편인증)
 @router.post("/access-token")
-async def get_access_token(kis_user_info: UserInvestAPIInfoRead):
+async def get_access_token(url_div:str, kis_user_info: UserInvestAPIInfoRead):
     logging.info("POST /access-token start")
 
     # 기본 요청 데이터 구성
     request_data = {
-        "url_div": "simul",  # 모의투자
+        "url_div": url_div,  # 모의투자
         "api_key": kis_user_info.api_key,
         "app_secret": kis_user_info.app_secret
     }
