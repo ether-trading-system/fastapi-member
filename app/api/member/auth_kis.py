@@ -68,57 +68,59 @@ MARKET_BROKER_API_URL = "http://localhost:8000/member/get-token"
 @router.post("/access-token")
 async def get_access_token(kis_user_info: UserInvestAPIInfoRead, db: Session = Depends(get_db)):
     logging.info("POST /access-token start")
-    # user_appkey = ""
-    # user_appsecret = ""
-    print(f"kis_user_info.api_key : {kis_user_info.api_key}")
-    print(f"kis_user_info.app_secret : {kis_user_info.app_secret}")
+
+    access_token = kis_user_info.access_token           # F/E Cookie로부터 전달받은 access token
+    expires_at = kis_user_info.access_token_expires     # 토큰만료일자
+
     try:
         response = requests.post(MARKET_BROKER_API_URL, json={
-            "url": "https://openapivts.koreainvestment.com:29443",
+            "url_div": "simul",     # 모의투자
             "api_key": kis_user_info.api_key,
-            "app_secret": kis_user_info.app_secret
+            "app_secret": kis_user_info.app_secret,
+            "access_token": access_token,
+            "expires_at": expires_at
         })
         print(response.json())
 
         if response.status_code == 200:
-            access_token_info = response.json()
+            return response.json()
 
-            if "error_code" in access_token_info:
-                error_code = access_token_info["error_code"]
-                if error_code == "EGW00133":
-                    raise HTTPException(status_code=429, detail=f"토큰 발급은 1분당 1회만 가능합니다.")
-                else:
-                    logging.error(f"API Error: {error_code} - {access_token_info.get('error_message', 'No error message')}")
-                    raise HTTPException(status_code=400, detail="토큰 발급에 실패하였습니다. API 요청 전문을 확인하세요.")
+            # if "error_code" in access_token_info:
+            #     error_code = access_token_info["error_code"]
+            #     if error_code == "EGW00133":
+            #         raise HTTPException(status_code=429, detail=f"토큰 발급은 1분당 1회만 가능합니다.")
+            #     else:
+            #         logging.error(f"API Error: {error_code} - {access_token_info.get('error_message', 'No error message')}")
+            #         raise HTTPException(status_code=400, detail="토큰 발급에 실패하였습니다. API 요청 전문을 확인하세요.")
             
-            # error_code 키가 없으면
-            else:
-                logging.info("KIS 토큰 발급 성공")
-                result = await db.execute(select(UserInvestAPIInfo).filter(
-                    UserInvestAPIInfo.service_type == kis_user_info.service_type,
-                    UserInvestAPIInfo.user_id == kis_user_info.user_id,
-                    UserInvestAPIInfo.account == kis_user_info.account
-                ))
-                db_user = result.scalars().first()
+            # # error_code 키가 없으면
+            # else:
+            #     logging.info("KIS 토큰 발급 성공")
+            #     result = await db.execute(select(UserInvestAPIInfo).filter(
+            #         UserInvestAPIInfo.service_type == kis_user_info.service_type,
+            #         UserInvestAPIInfo.user_id == kis_user_info.user_id,
+            #         UserInvestAPIInfo.account == kis_user_info.account
+            #     ))
+            #     db_user = result.scalars().first()
                 
-                if not db_user:
-                    raise HTTPException(status_code=404, detail="유저 정보를 찾을 수 없습니다.")
+            #     if not db_user:
+            #         raise HTTPException(status_code=404, detail="유저 정보를 찾을 수 없습니다.")
                 
-                # 토큰 정보 업데이트
-                db_user.access_token = access_token_info.get("access_token")
-                db_user.token_type = access_token_info.get("token_type")
-                db_user.expires_in = access_token_info.get("expires_in")
-                db_user.access_token_expires = datetime.now() + timedelta(seconds=db_user.expires_in)
+            #     # 토큰 정보 업데이트
+            #     db_user.access_token = access_token_info.get("access_token")
+            #     db_user.token_type = access_token_info.get("token_type")
+            #     db_user.expires_in = access_token_info.get("expires_in")
+            #     db_user.access_token_expires = datetime.now() + timedelta(seconds=db_user.expires_in)
                 
-                # modify_at, modify_by 업데이트
-                db_user.modify_at = datetime.now()
-                db_user.modify_by = "FastAPI User"
+            #     # modify_at, modify_by 업데이트
+            #     db_user.modify_at = datetime.now()
+            #     db_user.modify_by = "FastAPI User"
 
-                # 변경사항 적용
-                await db.commit()
-                await db.refresh(db_user)
+            #     # 변경사항 적용
+            #     await db.commit()
+            #     await db.refresh(db_user)
                 
-                return db_user
+            #     return db_user
         
         else:
             logging.error(f"Authentication failed: {response.status_code} - {response.text}")
