@@ -129,7 +129,7 @@ async def logout_by_access_token(request: KakaoLogoutRequest):
 
 
 # 사용자 정보 조회(등록된 사용자 id)
-@router.get("/get-user-id/{kakao_id}")
+@router.get("/get-user-info/{kakao_id}")
 async def get_user_info(kakao_id: str, db: AsyncSession = Depends(get_db)):
     logging.info("GET /get_user_info start")
     
@@ -143,7 +143,7 @@ async def get_user_info(kakao_id: str, db: AsyncSession = Depends(get_db)):
 
 
 # 신규 사용자 생성
-@router.post("/create-kakao-user")
+@router.post("/regist-user")
 async def create_kakao_user(user_info: UserLoginInfoCreate, db: AsyncSession = Depends(get_db)):
     logging.info("POST /create_kakao_user start")
     

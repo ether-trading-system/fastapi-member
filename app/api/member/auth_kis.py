@@ -17,7 +17,7 @@ DEMO_INV_URL = "https://openapivts.koreainvestment.com:29443"
 
 
 # 한투 - 신규 API Key 등록
-@router.post("/regist-kis-api")
+@router.post("/regist-api-info")
 async def regist_kis_api(kis_user_info: UserInvestAPIInfoCreate, db: Session = Depends(get_db)):
         logging.info("POST /regist-user start")
 
@@ -61,73 +61,52 @@ async def regist_kis_api(kis_user_info: UserInvestAPIInfoCreate, db: Session = D
             raise HTTPException(status_code=500, detail="사용자 등록 중 오류가 발생했습니다.")
 
 
+# 환경변수로 빼기
+MARKET_BROKER_API_URL = "http://localhost:8000/member/get-token"
 
 # 한투 - access token 발급(간편인증)
 @router.post("/access-token")
-async def get_access_token(kis_user_info: UserInvestAPIInfoRead, db: Session = Depends(get_db)):
+async def get_access_token(url_div:str, kis_api_info: UserInvestAPIInfoRead):
     logging.info("POST /access-token start")
-    # user_appkey = ""
-    # user_appsecret = ""
-    print(f"kis_user_info.api_key : {kis_user_info.api_key}")
-    print(f"kis_user_info.app_secret : {kis_user_info.app_secret}")
+
+    # 기본 요청 데이터 구성
+    request_data = {
+        "url_div": url_div,  # 모의투자
+        "api_key": kis_api_info.api_key,
+        "app_secret": kis_api_info.app_secret
+    }
+
+    # access_token과 expires_at이 있는 경우에만 추가
+    if kis_api_info.access_token:
+        request_data["access_token"] = kis_api_info.access_token
+    if kis_api_info.access_token_expires:
+        request_data["expires_at"] = kis_api_info.access_token_expires
+
     try:
-        response = requests.post(f"{DEMO_INV_URL}/oauth2/tokenP", json={
-            "grant_type": "client_credentials",     # 고정
-            "appkey": kis_user_info.api_key,
-            "appsecret": kis_user_info.app_secret
-        })
+        # Market Broker API에 요청
+        response = requests.post(MARKET_BROKER_API_URL, json=request_data)
 
+        # 응답 처리
         if response.status_code == 200:
-            access_token_info = response.json()
+            response_data = response.json()
+            header = response_data.get("header", {})
+            data = response_data.get("data", {})
 
-            if "error_code" in access_token_info:
-                error_code = access_token_info["error_code"]
-                if error_code == "EGW00133":
-                    raise HTTPException(status_code=429, detail=f"토큰 발급은 1분당 1회만 가능합니다.")
-                else:
-                    logging.error(f"API Error: {error_code} - {access_token_info.get('error_message', 'No error message')}")
-                    raise HTTPException(status_code=400, detail="토큰 발급에 실패하였습니다. API 요청 전문을 확인하세요.")
-            
-            # error_code 키가 없으면
-            else:
-                logging.info("KIS 토큰 발급 성공")
-                result = await db.execute(select(UserInvestAPIInfo).filter(
-                    UserInvestAPIInfo.service_type == kis_user_info.service_type,
-                    UserInvestAPIInfo.user_id == kis_user_info.user_id,
-                    UserInvestAPIInfo.account == kis_user_info.account
-                ))
-                db_user = result.scalars().first()
-                
-                if not db_user:
-                    raise HTTPException(status_code=404, detail="유저 정보를 찾을 수 없습니다.")
-                
-                # 토큰 정보 업데이트
-                db_user.access_token = access_token_info.get("access_token")
-                db_user.token_type = access_token_info.get("token_type")
-                db_user.expires_in = access_token_info.get("expires_in")
-                db_user.access_token_expires = datetime.now() + timedelta(seconds=db_user.expires_in)
-                
-                # modify_at, modify_by 업데이트
-                db_user.modify_at = datetime.now()
-                db_user.modify_by = "FastAPI User"
+            # 표준화된 응답을 반환
+            return {"header": header, "data": data}
 
-                # 변경사항 적용
-                await db.commit()
-                await db.refresh(db_user)
-                
-                return db_user
-        
         else:
+            # HTTP 상태 코드가 200이 아닌 경우
             logging.error(f"Authentication failed: {response.status_code} - {response.text}")
-            raise HTTPException(status_code=response.status_code, detail="Authentication failed")
+            return {
+                "header": {"res_code": response.status_code},
+                "data": {"error_description": "Authentication failed", "error_code": "HTTP_ERROR"}
+            }
         
     except Exception as e:
         logging.error(f"An error occurred: {e}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
-
-
-
-# 한투 - access token 발급(API Key, Secret 사용)
-@router.post("refresh-token")
-async def refresh_token(user_id: str, access_token: str):
-    return ""
+        # 예기치 못한 에러 발생 시 표준화된 에러 반환
+        return {
+            "header": {"res_code": 500},
+            "data": {"error_description": str(e), "error_code": "UNEXPECTED_ERROR"}
+        }

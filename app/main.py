@@ -3,17 +3,9 @@ from app.api.member import auth_kis, auth_kakao, user
 from fastapi.middleware.cors import CORSMiddleware
 
 from common.utils.postgresql_helper import engine
-
-# from common.utils.postgresql_helper import engine, Base
 from contextlib import asynccontextmanager
 from app.models.base import Base
-from dotenv import load_dotenv
-import os
 
-load_dotenv()
-
-PUBLIC_URL = os.getenv("PUBLIC_URL")
-print(PUBLIC_URL)
 
 
 @asynccontextmanager
@@ -22,7 +14,6 @@ async def lifespan(app: FastAPI):
         await conn.run_sync(Base.metadata.create_all)
         print("create all orm instance")
     yield
-
 
 app = FastAPI(lifespan=lifespan)
 
@@ -36,8 +27,6 @@ app.add_middleware(
 )
 
 # 라우터 추가
-app.include_router(auth_kis.router, prefix=f"{PUBLIC_URL}/auth-kis", tags=["auth_KIS"])
-app.include_router(
-    auth_kakao.router, prefix="/public/api/member/auth-kakao", tags=["auth_Kakao"]
-)
-app.include_router(user.router, prefix="/public/api/member/user", tags=["user"])
+app.include_router(auth_kis.router, prefix="/auth-kis", tags=["auth_KIS"])
+app.include_router(auth_kakao.router, prefix="/auth-kakao", tags=["auth_Kakao"])
+app.include_router(user.router, prefix="/user", tags=["user"])
