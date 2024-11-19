@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
-from datetime import datetime, timedelta
+from datetime import datetime
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 import requests
@@ -11,8 +11,6 @@ from common.utils.postgresql_helper import get_db
 
 router = APIRouter()
 
-REAL_INV_URL = "https://openapi.koreainvestment.com:9443"
-DEMO_INV_URL = "https://openapivts.koreainvestment.com:29443"
 
 
 
