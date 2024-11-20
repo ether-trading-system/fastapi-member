@@ -59,7 +59,9 @@ async def get_access_token(token_request: KakaoTokenRequest):
     print(token_request)
     try:
         response = requests.post(
-            KAKAO_ACCESS_TOKEN_ENDPOINT, headers={"Content-Type":"application/x-www-form-urlencoded;charset=utf-8"} data=token_request.dict(exclude_none=True)
+            KAKAO_ACCESS_TOKEN_ENDPOINT,
+            headers={"Content-Type": "application/x-www-form-urlencoded;charset=utf-8"},
+            data=token_request.dict(exclude_none=True),
         )
         print(response)
         response.raise_for_status()
