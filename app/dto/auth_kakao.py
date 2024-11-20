@@ -7,6 +7,7 @@ class KakaoTokenRequest(BaseModel):
     client_id: str                                                      # REST API 키
     redirect_uri: str                                                   # 인가코드가 Redirect된 URI
     code: str                                                           # 인가코드 받기 요청으로 얻은 인가코드
+    refresh_token: str
     client_secret: str = None                                           # 보안 강화용, 필수 X
 
 
