@@ -9,7 +9,12 @@ from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.dto.auth_kakao import KakaoTokenRequest, KakaoTokenResponse, KakaoLogoutRequest
+from app.dto.auth_kakao import (
+    KakaoTokenRequest,
+    KakaoTokenResponse,
+    KakaoLogoutRequest,
+    KakaoTokenRefreshRequest,
+)
 from common.utils.postgresql_helper import get_db
 from app.models.users import UserLoginInfo
 from app.schemas.users import UserLoginInfoRead, UserLoginInfoCreate
@@ -71,6 +76,32 @@ async def get_access_token(token_request: KakaoTokenRequest):
     except requests.RequestException as e:
         logging.error(f"Access Token 발급에 실패하였습니다 : {e}")
         raise HTTPException(status_code=500, detail="Access Token 발급 실패")
+
+
+# 카카오 간편인증 - Access Token 발급받기
+@router.post(
+    "/refresh-token",
+    summary="refresh token 발급",
+    description="카카오 OAuth2.0 refreshed token을 발급받습니다.",
+    response_description="refreshed token 반환",
+)
+async def get_refresh_token(token_request: KakaoTokenRefreshRequest):
+    logging.info("POST /get_refresh_token start")
+
+    try:
+        response = requests.post(
+            KAKAO_ACCESS_TOKEN_ENDPOINT, data=token_request.dict(exclude_none=True)
+        )
+        response.raise_for_status()
+
+        token_response = KakaoTokenResponse(**response.json())
+
+        logging.info(token_response.dict())
+        return JSONResponse(content=token_response.dict())
+
+    except requests.RequestException as e:
+        logging.error(f"Access Token 발급에 실패하였습니다 : {e}")
+        raise HTTPException(status_code=500, detail="Token 갱신 실패")
 
 
 # token 유효성 검증
