@@ -7,13 +7,13 @@ from contextlib import asynccontextmanager
 from app.models.base import Base
 
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         print("create all orm instance")
     yield
+
 
 app = FastAPI(lifespan=lifespan)
 
@@ -27,7 +27,10 @@ app.add_middleware(
 )
 
 # 라우터 추가
-app.include_router(auth_kis.router, prefix="/auth-kis", tags=["auth_KIS"])
-app.include_router(auth_kakao.router, prefix="/auth-kakao", tags=["auth_Kakao"])
-app.include_router(user.router, prefix="/user", tags=["user"])
-
+app.include_router(
+    auth_kis.router, prefix="/public/api/member/auth-kis", tags=["auth_KIS"]
+)
+app.include_router(
+    auth_kakao.router, prefix="/public/api/member/auth-kakao", tags=["auth_Kakao"]
+)
+app.include_router(user.router, prefix="/public/api/member/user", tags=["user"])
